@@ -1,7 +1,7 @@
 # ComputerGraphics
 Computer Graphics tools developed in python for computer graphics.
 
-## Contents:
+## Projects:
 - TrackBall
 - RayCasting
 

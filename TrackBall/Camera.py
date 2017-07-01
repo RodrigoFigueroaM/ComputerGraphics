@@ -1,7 +1,7 @@
 from PyQt5.QtGui import (QMatrix4x4, QVector3D, QVector4D)
 
 
-class Camera(object):
+class Camera:
     """docstring for Camera"""
     def __init__(self, position=QVector3D(0, 0, 1),
                  direction=QVector3D(0, 0, 0),

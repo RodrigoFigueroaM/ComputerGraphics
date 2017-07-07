@@ -18,29 +18,33 @@ import numpy as np
 # TODO: fix obj loader class
 # TODO:
 
+
 class Scene(GLStandardWindow3D):
     vertexShaderSource = """
     #version 330
 
     layout(location = 0) in vec4 pos;
-    out vec4 vertex;
-
+     layout(location = 1) in vec4 color;
+    out vec4 col;
+    
     void main() 
-    {
-        vertex = pos;
+    {   
+        col = color;
         gl_Position = pos;
-    }"""
+    }
+    """
 
     fragmentShaderSource = """
     # version 330
-    in vec4 vertex;
+    
+    in vec4 col;
     out vec4 FragColor;
     void main() 
-{
-     FragColor = vec4(1.0,1.0,1.0,1.0);
-}
-"""
-  
+    {
+       FragColor = col;
+    }
+     """
+
     def __init__(self):
         super(Scene, self).__init__()
         # self.program = QOpenGLShaderProgram(self)
@@ -81,8 +85,7 @@ class Scene(GLStandardWindow3D):
         self.releaseClick = QVector3D()
         self.rotation = QMatrix4x4()
         self.normalMatrix = QMatrix4x4()
-        self.posAttr = 0
-        self.colAttr = 0
+
         # interaction
         self.key = None
         self.th = 0
@@ -93,19 +96,22 @@ class Scene(GLStandardWindow3D):
         self.vertex = QOpenGLBuffer()
         self.object = QOpenGLVertexArrayObject()
 
-        self.drawingVertices = [-0.5, 0.5, 0.0,
-                           -0.5, -0.5, 0.0,
-                           0.5, -0.5, 0.0,
+        self.drawingVertices = [
+                           -0.5, 0.5, 0.0,           1.0, 1.0, 1.0,
+                           -0.5, -0.5, 0.0,          1.0, 0.0, 0.0,
+                           0.5, -0.5, 0.0,           0.0, 0.0, 1.0,
 
-                           0.5, -0.5, 0,
-                           0.5, 0.5, 0,
-                           -0.5, 0.5, 0]
+                           0.5, -0.5, 0,             0.0, 0.0, 1.0,
+                           0.5, 0.5, 0,              1.0, 0.0, 0.0,
+                           -0.5, 0.5, 0,             0.0, 0.0, 0.0]
+
         self.drawingVertices = np.asarray(self.drawingVertices, dtype=np.float32)
 
     def initializeGL(self):
         self.printOpenGLSettings()
 
         GL.glClearColor(0.2, 0.2, 0.2, 1.0)
+
         #shader program
         self.program.addShaderFromSourceCode(QOpenGLShader.Vertex, self.vertexShaderSource)
         self.program.addShaderFromSourceCode(QOpenGLShader.Fragment, self.fragmentShaderSource)
@@ -122,8 +128,15 @@ class Scene(GLStandardWindow3D):
         self.object.create()
         self.object.bind()
         self.program.enableAttributeArray(0)
+        self.program.enableAttributeArray(1)
 
-        self.program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, 0)
+        vertex_elements = 3
+        num_of_elements_in_buffer = 2
+        color_offset = self.drawingVertices[0].nbytes * vertex_elements
+        stride = self.drawingVertices[0].nbytes * vertex_elements * num_of_elements_in_buffer
+        # setAttributeBuffer(int location, GLenum type, int offset, int tupleSize, int stride = 0)
+        self.program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, stride )
+        self.program.setAttributeBuffer(1, GL.GL_FLOAT, color_offset, 3, stride)
         # self.program.setAttributeArray(0, GL.GL_FLOAT, 0, len(self.drawingVertices), 0)
 
         self.object.release()
@@ -133,9 +146,12 @@ class Scene(GLStandardWindow3D):
 
     def paintGL(self):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        GL.glViewport(0, 0, self.width, self.height)
         self.program.bind()
         self.object.bind()
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(self.drawingVertices)//3)
+        GL.glPointSize(10.0)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(self.drawingVertices)//3//2)  # // number of elements on vertex, // number of attributes
+        # GL.glDrawArrays(GL.GL_POINTS, 0, 2)
         self.object.release()
         self.program.release()
 

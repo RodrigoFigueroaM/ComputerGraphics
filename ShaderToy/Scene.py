@@ -29,18 +29,7 @@ class Scene(GLStandardWindow3D):
         self.drawingIndices = []
         self.drawingNormals = []
 
-
-        # normalsList = normalsPerTriangle(self.vtr, self.drawingIndices)
-        # self.normals = normalsPerVertex(normalsList, len(self.vtr))
-        # self.normals = [PyQt5.QtGui.QVector3D(0.0, 0.0, -1.0), PyQt5.QtGui.QVector3D(-1.0, -0.0, -0.0), PyQt5.QtGui.QVector3D(-0.0, -0.0, 1.0), PyQt5.QtGui.QVector3D(-9.999999974752427e-07, 0.0, 1.0), PyQt5.QtGui.QVector3D(1.0, -0.0, 0.0), PyQt5.QtGui.QVector3D(1.0, 0.0, 9.999999974752427e-07), PyQt5.QtGui.QVector3D(0.0, 1.0, -0.0), PyQt5.QtGui.QVector3D(-0.0, -1.0, 0.0)]
-        # self.normals = objLoader[3]
-        # for value in self.normals:
-        #     self.drawingNormals.append(float(value.x()))
-        #     self.drawingNormals.append(float(value.y()))
-        #     self.drawingNormals.append(float(value.z()))
-        # print(self.normals)
-
-        self._camera = Camera(position=QVector3D(0, 0, 4),
+        self._camera = Camera(position=QVector3D(0, 0,3),
                               direction=QVector3D(0, 0, 0),
                               up=QVector3D(0, 1, 0),
                               fov=90)
@@ -56,30 +45,36 @@ class Scene(GLStandardWindow3D):
         self.th = 0
         self.showWireFrame = True
 
-
-        # objLoader = ObjectLoader("./objs/Cube.obj")
+        # objLoader = ObjectLoader("./objs/sphere.obj")
         objLoader = ObjectLoader("./objs/Cerberus.obj")
+        vtr = objLoader[0]
+        norms = objLoader[3]
+        verticesAndNormals = [j for i in zip(vtr, norms) for j in i]
 
-        self.vtr = objLoader[0]
+        for vector in verticesAndNormals:
+            self.drawingVertices.append(float(vector.x()))
+            self.drawingVertices.append(float(vector.y()))
+            self.drawingVertices.append(float(vector.z()))
 
-        for value in self.vtr:
-            self.drawingVertices.append(float(value.x()))
-            self.drawingVertices.append(float(value.y()))
-            self.drawingVertices.append(float(value.z()))
+        print(len(vtr))
+        print(len(norms))
+        print(len(verticesAndNormals))
 
         self.drawingIndices = objLoader[1]
         # self.drawingVertices = Model.cubeWithColors()
 
         self.drawingVertices = Model.ListToArray(list=self.drawingVertices, type=np.float32)
         self.drawingIndices = Model.ListToArray(list=self.drawingIndices, type=np.int32)
-        self.program = GLProgram(self, numAttibutesInvbo=1)
+        self.program = GLProgram(self, numAttibutesInvbo=2)
 
     def initializeGL(self):
         super(Scene, self).initializeGL()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glClearColor(0.2, 0.2, 0.2, 1.0)
-        self.program.initProgram('./shaders/simple.vert', './shaders/simple.frag',
-                                 self.drawingVertices, self.drawingIndices, attribs=[0])
+        self.program.initProgram('./shaders/blinPhong.vert', './shaders/toon.frag',
+                                 self.drawingVertices, self.drawingIndices, attribs=[0,1])
+        print(self.drawingVertices)
+        print(len(self.drawingVertices))
 
     def paintGL(self):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -96,12 +91,13 @@ class Scene(GLStandardWindow3D):
         else:
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
 
-        self.drawProgramSubrutine(self.program)
+        self.drawProgramSubrutine(self.program,GL.GL_TRIANGLES)
 
     def drawProgramSubrutine(self, program, mode=GL.GL_TRIANGLES):
         Nullptr = ctypes.c_void_p(0)
         program.bind()
         program.setUniformValue('modelViewMatrix', self.camera.modelViewMatrix)
+        self.program.setUniformValue('normalMatrix', self.camera.normalMatrix)
         program.setUniformValue('projectionMatrix', self.camera.projectionMatrix)
         GL.glDrawElements(mode, len(program.indices), GL.GL_UNSIGNED_INT, Nullptr)
         program.unbind()

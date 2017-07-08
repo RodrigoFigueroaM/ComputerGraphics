@@ -76,7 +76,7 @@ class GLProgram:
         self.program.enableAttributeArray(location)
 
     def bindAttributes(self):
-        color_offset = self.vertices[0].nbytes * self.vertex_elements
+        offset = self.vertices[0].nbytes * self.vertex_elements
         stride = self.vertices[0].nbytes * self.vertex_elements * self.num_of_elements_in_vbo
         if self.num_of_elements_in_vbo == 1:
             self._program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, 0)
@@ -85,7 +85,7 @@ class GLProgram:
                 if i == 0:
                     self._program.setAttributeBuffer(i, GL.GL_FLOAT, 0, 3, stride)
                 else:
-                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, color_offset, 3, stride)
+                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, offset, 3, stride)
 
     def bind(self):
         self.program.bind()

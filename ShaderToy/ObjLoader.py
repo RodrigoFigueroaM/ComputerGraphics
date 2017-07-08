@@ -59,7 +59,7 @@ def parseFaces(facesList):
 
 
 if __name__ == "__main__":
-    objLoader = ObjectLoader("Cube.obj")
+    objLoader = ObjectLoader("./objs/Cube.obj")
     drawingVertices = objLoader[0]
     drawingIndices = objLoader[1]
     drawingNormals = objLoader[3]

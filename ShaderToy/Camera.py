@@ -14,6 +14,7 @@ class Camera:
         self._fov = fov
         self._projectionMatrix = QMatrix4x4()
         self._modelViewMatrix = QMatrix4x4()
+        self._normalMatrix =QMatrix4x4()
 
     def setOrthographic(self,  left=-1.0, right=1.0, bottom=-1.0, top=1.0, near=0.1, far=20.0):
         self.projectionMatrix.setToIdentity()
@@ -157,6 +158,15 @@ class Camera:
     def modelViewMatrix(self, modelViewMatrix):
         self._modelViewMatrix.setToIdentity()
         self._modelViewMatrix = modelViewMatrix
+
+    @property
+    def normalMatrix(self):
+        self._normalMatrix = self.modelViewMatrix.inverted()[0].transposed()
+        return self._normalMatrix
+
+    @normalMatrix.setter
+    def normalMatix(self, normalMat):
+        self._normalMatrix = normalMat
 
     def __str__(self):
         return 'position:{}\ndirection: {}\nup:{}\n'.format(self._pos, self._dir, self._up)

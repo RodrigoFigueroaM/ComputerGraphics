@@ -6,7 +6,7 @@ from PyQt5.QtGui import QMatrix4x4, QVector3D, QWheelEvent , QOpenGLShader, QOpe
 from PyQt5.Qt import Qt
 from GLStandardWindow3D import GLStandardWindow3D
 from Camera import Camera
-from ObjectLoader import ObjectLoader
+from ObjLoader import ObjectLoader
 from GLProgram import GLProgram
 from TrackBall import TrackBall
 import OpenGL.GL as GL
@@ -56,10 +56,10 @@ class Scene(GLStandardWindow3D):
         self.th = 0
         self.showWireFrame = True
 
-        self.program = GLProgram(self)
 
-        objLoader = ObjectLoader("./objs/Cube.obj")
-        # objLoader = ObjectLoader("./objs/sphere.obj")
+        # objLoader = ObjectLoader("./objs/Cube.obj")
+        objLoader = ObjectLoader("./objs/Cerberus.obj")
+
         self.vtr = objLoader[0]
 
         for value in self.vtr:
@@ -72,6 +72,7 @@ class Scene(GLStandardWindow3D):
 
         self.drawingVertices = Model.ListToArray(list=self.drawingVertices, type=np.float32)
         self.drawingIndices = Model.ListToArray(list=self.drawingIndices, type=np.int32)
+        self.program = GLProgram(self, numAttibutesInvbo=1)
 
     def initializeGL(self):
         super(Scene, self).initializeGL()
@@ -95,23 +96,15 @@ class Scene(GLStandardWindow3D):
         else:
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
 
-        self.program.bind()
-        # GL.glVertexAttribPointer(0,)
-        # GL.glVertexAttribPointer(3, GL.GL_FLOAT, 0, ctypes.c_void_p(0))
-        self.program.setUniformValue('modelViewMatrix', self.camera.modelViewMatrix)
-        self.program.setUniformValue('projectionMatrix', self.camera.projectionMatrix)
-        print(self.drawingIndices)
-        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(self.drawingVertices)//3)
-        GL.glPointSize(20)
-        err = GL.glGetError()
-        print("ERROR", err)
-        # GL.glDrawElements(GL.GL_POINTS, len(self.program.indices), GL.GL_UNSIGNED_INT, 0)
-        GL.glDrawElements(GL.GL_POINTS, 10, GL.GL_UNSIGNED_INT, self.program.indices)
-        self.program.unbind()
+        self.drawProgramSubrutine(self.program)
 
-        err = GL.glGetError()
-        print("ERROR", err)
-
+    def drawProgramSubrutine(self, program, mode=GL.GL_TRIANGLES):
+        Nullptr = ctypes.c_void_p(0)
+        program.bind()
+        program.setUniformValue('modelViewMatrix', self.camera.modelViewMatrix)
+        program.setUniformValue('projectionMatrix', self.camera.projectionMatrix)
+        GL.glDrawElements(mode, len(program.indices), GL.GL_UNSIGNED_INT, Nullptr)
+        program.unbind()
 
     def mousePressEvent(self, event):
         self.th += 1

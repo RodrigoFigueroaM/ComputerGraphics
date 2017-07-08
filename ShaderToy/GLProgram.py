@@ -3,9 +3,9 @@ import OpenGL.GL as GL
 
 
 class GLProgram:
-    def __init__(self, context):
+    def __init__(self, context, numAttibutesInvbo = 1):
         super(GLProgram, self).__init__()
-        self.num_of_elements_in_buffer = 2
+        self.num_of_elements_in_vbo = numAttibutesInvbo
         self.vertex_elements = 3
         self._program = QOpenGLShaderProgram(context)
         self._vertexBufferObject = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
@@ -19,14 +19,20 @@ class GLProgram:
         self.vertices = vertices
         self.indices = indices
         self.initShaderProgram(vertFile, fragFile)
-        self.initVAO()
         self.initVertexBuffer()
         self.initIndexBuffer()
+        self.initVAO()
         for i in attribs:
-            print(i)
             self.enableAttributeArray(i)
         self.bindAttributes()
-        self.unbind()
+        self.indexBufferObject.bind()
+        self.releaseBuffersAndProgram()
+
+    def releaseBuffersAndProgram(self):
+        self.VAO.release()
+        self.vertexBufferObject.release()
+        self.indexBufferObject.release()
+        self.program.release()
 
     def unbind(self):
         self.VAO.release()
@@ -48,6 +54,8 @@ class GLProgram:
         self.vertexBufferObject.bind()
         self.vertexBufferObject.setUsagePattern(QOpenGLBuffer.StaticDraw)
         self.vertexBufferObject.allocate(self.vertices, self.vertices.nbytes)
+        self.vertexBufferObject.release()
+        self.vertexBufferObject.bind()
 
     def initIndexBuffer(self):
         # indices
@@ -55,6 +63,8 @@ class GLProgram:
         self.indexBufferObject.bind()
         self.indexBufferObject.setUsagePattern(QOpenGLBuffer.StaticDraw)
         self.indexBufferObject.allocate(self.indices, self.indices.nbytes)
+        self.indexBufferObject.release()
+        self.indexBufferObject.bind()
 
     def initVAO(self):
         # object
@@ -66,21 +76,16 @@ class GLProgram:
         self.program.enableAttributeArray(location)
 
     def bindAttributes(self):
-        # print(vertices)
-        stride = self.vertices[0].nbytes * self.vertex_elements * self.num_of_elements_in_buffer
-        err = GL.glGetError()
-        print("ERROR", err)
-
-        # GL.glVertexAttribPointer(0, 3, GL.GL_FLOAT, GL.GL_FALSE, 0, 0)
-        self.program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, 0)
-        #
-        # color_offset = self.vertices[0].nbytes * self.vertex_elements
-        # stride = self.vertices[0].nbytes * self.vertex_elements * self.num_of_elements_in_buffer
-        # for i in self.attributes:
-        #     if i == 0:
-        #         self._program.setAttributeBuffer(i, GL.GL_FLOAT, 0, 3, stride)
-        #     else:
-        #         self._program.setAttributeBuffer(i, GL.GL_FLOAT, color_offset, 3, stride)
+        color_offset = self.vertices[0].nbytes * self.vertex_elements
+        stride = self.vertices[0].nbytes * self.vertex_elements * self.num_of_elements_in_vbo
+        if self.num_of_elements_in_vbo == 1:
+            self._program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, 0)
+        else:
+            for i in self.attributes:
+                if i == 0:
+                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, 0, 3, stride)
+                else:
+                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, color_offset, 3, stride)
 
     def bind(self):
         self.program.bind()

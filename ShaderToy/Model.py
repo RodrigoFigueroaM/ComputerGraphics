@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 import sys
 import OpenGL.GL as GL
-from ObjectLoader import ObjectLoader
+from ObjLoader import ObjectLoader
 import numpy as np
 
 class Model:

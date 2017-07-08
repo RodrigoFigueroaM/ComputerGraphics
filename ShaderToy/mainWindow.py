@@ -9,4 +9,4 @@ class MainWindow(Ui_MainWindow):
     def __init__(self, window):
         Ui_MainWindow.__init__(self)
         self.setupUi(window)
-        window.setWindowTitle("Camera control")
+        window.setWindowTitle("Shader Toy")

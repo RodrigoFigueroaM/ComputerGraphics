@@ -7,47 +7,20 @@ from PyQt5.Qt import Qt
 from GLStandardWindow3D import GLStandardWindow3D
 from Camera import Camera
 from ObjectLoader import ObjectLoader
+from GLProgram import GLProgram
 from TrackBall import TrackBall
 import OpenGL.GL as GL
 from Model import Model
-import numpy as np
+from Model import Model
 import numpy as np
 
-# TODO: create loader class
 # TODO: new window system
 # TODO: fix obj loader class
-# TODO:
 
 
 class Scene(GLStandardWindow3D):
-    vertexShaderSource = """
-    #version 330
-
-    layout(location = 0) in vec4 pos;
-     layout(location = 1) in vec4 color;
-    out vec4 col;
-    
-    void main() 
-    {   
-        col = color;
-        gl_Position = pos;
-    }
-    """
-
-    fragmentShaderSource = """
-    # version 330
-    
-    in vec4 col;
-    out vec4 FragColor;
-    void main() 
-    {
-       FragColor = col;
-    }
-     """
-
     def __init__(self):
         super(Scene, self).__init__()
-        # self.program = QOpenGLShaderProgram(self)
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.StrongFocus)
         self.colors = []
@@ -56,16 +29,7 @@ class Scene(GLStandardWindow3D):
         self.drawingIndices = []
         self.drawingNormals = []
 
-        # objLoader = ObjectLoader("Cube.obj")
-        # objLoader = ObjectLoader("sphere.obj")
-        # self.vtr = objLoader[0]
 
-        # for value in self.vtr:
-        #     self.drawingVertices.append(float(value.x()))
-        #     self.drawingVertices.append(float(value.y()))
-        #     self.drawingVertices.append(float(value.z()))
-
-        # self.drawingIndices = objLoader[1]
         # normalsList = normalsPerTriangle(self.vtr, self.drawingIndices)
         # self.normals = normalsPerVertex(normalsList, len(self.vtr))
         # self.normals = [PyQt5.QtGui.QVector3D(0.0, 0.0, -1.0), PyQt5.QtGui.QVector3D(-1.0, -0.0, -0.0), PyQt5.QtGui.QVector3D(-0.0, -0.0, 1.0), PyQt5.QtGui.QVector3D(-9.999999974752427e-07, 0.0, 1.0), PyQt5.QtGui.QVector3D(1.0, -0.0, 0.0), PyQt5.QtGui.QVector3D(1.0, 0.0, 9.999999974752427e-07), PyQt5.QtGui.QVector3D(0.0, 1.0, -0.0), PyQt5.QtGui.QVector3D(-0.0, -1.0, 0.0)]
@@ -76,10 +40,11 @@ class Scene(GLStandardWindow3D):
         #     self.drawingNormals.append(float(value.z()))
         # print(self.normals)
 
-        self._camera = Camera(position=QVector3D(2, 2, 5),
+        self._camera = Camera(position=QVector3D(0, 0, 4),
                               direction=QVector3D(0, 0, 0),
                               up=QVector3D(0, 1, 0),
                               fov=90)
+
         self.trackBall = TrackBall()
         self.pressClick = QVector3D()
         self.releaseClick = QVector3D()
@@ -91,69 +56,62 @@ class Scene(GLStandardWindow3D):
         self.th = 0
         self.showWireFrame = True
 
-        #:/
-        self.program = QOpenGLShaderProgram(self)
-        self.vertex = QOpenGLBuffer()
-        self.object = QOpenGLVertexArrayObject()
+        self.program = GLProgram(self)
 
-        self.drawingVertices = [
-                           -0.5, 0.5, 0.0,           1.0, 1.0, 1.0,
-                           -0.5, -0.5, 0.0,          1.0, 0.0, 0.0,
-                           0.5, -0.5, 0.0,           0.0, 0.0, 1.0,
+        objLoader = ObjectLoader("./objs/Cube.obj")
+        # objLoader = ObjectLoader("./objs/sphere.obj")
+        self.vtr = objLoader[0]
 
-                           0.5, -0.5, 0,             0.0, 0.0, 1.0,
-                           0.5, 0.5, 0,              1.0, 0.0, 0.0,
-                           -0.5, 0.5, 0,             0.0, 0.0, 0.0]
+        for value in self.vtr:
+            self.drawingVertices.append(float(value.x()))
+            self.drawingVertices.append(float(value.y()))
+            self.drawingVertices.append(float(value.z()))
 
-        self.drawingVertices = np.asarray(self.drawingVertices, dtype=np.float32)
+        self.drawingIndices = objLoader[1]
+        # self.drawingVertices = Model.cubeWithColors()
+
+        self.drawingVertices = Model.ListToArray(list=self.drawingVertices, type=np.float32)
+        self.drawingIndices = Model.ListToArray(list=self.drawingIndices, type=np.int32)
 
     def initializeGL(self):
-        self.printOpenGLSettings()
-
+        super(Scene, self).initializeGL()
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glClearColor(0.2, 0.2, 0.2, 1.0)
-
-        #shader program
-        self.program.addShaderFromSourceCode(QOpenGLShader.Vertex, self.vertexShaderSource)
-        self.program.addShaderFromSourceCode(QOpenGLShader.Fragment, self.fragmentShaderSource)
-        self.program.link()
-        self.program.bind()
-
-        #vertices
-        self.vertex.create()
-        self.vertex.bind()
-        self.vertex.usagePattern()
-        self.vertex.allocate(self.drawingVertices, self.drawingVertices.nbytes)
-
-        #object
-        self.object.create()
-        self.object.bind()
-        self.program.enableAttributeArray(0)
-        self.program.enableAttributeArray(1)
-
-        vertex_elements = 3
-        num_of_elements_in_buffer = 2
-        color_offset = self.drawingVertices[0].nbytes * vertex_elements
-        stride = self.drawingVertices[0].nbytes * vertex_elements * num_of_elements_in_buffer
-        # setAttributeBuffer(int location, GLenum type, int offset, int tupleSize, int stride = 0)
-        self.program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, stride )
-        self.program.setAttributeBuffer(1, GL.GL_FLOAT, color_offset, 3, stride)
-        # self.program.setAttributeArray(0, GL.GL_FLOAT, 0, len(self.drawingVertices), 0)
-
-        self.object.release()
-        self.vertex.release()
-        self.program.release()
-
+        self.program.initProgram('./shaders/simple.vert', './shaders/simple.frag',
+                                 self.drawingVertices, self.drawingIndices, attribs=[0])
 
     def paintGL(self):
-        GL.glClear(GL.GL_COLOR_BUFFER_BIT)
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glViewport(0, 0, self.width, self.height)
+
+        self.ratio = self.width / self.height
+        self.camera.setPerspective(self.camera.fov, self.ratio, 0.1, 100.0)
+
+        self.camera.lookAtCenter()
+        self.camera.position = self.rotation * self.camera.position
+
+        if self.showWireFrame:
+            GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL)
+        else:
+            GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
+
         self.program.bind()
-        self.object.bind()
-        GL.glPointSize(10.0)
-        GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(self.drawingVertices)//3//2)  # // number of elements on vertex, // number of attributes
-        # GL.glDrawArrays(GL.GL_POINTS, 0, 2)
-        self.object.release()
-        self.program.release()
+        # GL.glVertexAttribPointer(0,)
+        # GL.glVertexAttribPointer(3, GL.GL_FLOAT, 0, ctypes.c_void_p(0))
+        self.program.setUniformValue('modelViewMatrix', self.camera.modelViewMatrix)
+        self.program.setUniformValue('projectionMatrix', self.camera.projectionMatrix)
+        print(self.drawingIndices)
+        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, len(self.drawingVertices)//3)
+        GL.glPointSize(20)
+        err = GL.glGetError()
+        print("ERROR", err)
+        # GL.glDrawElements(GL.GL_POINTS, len(self.program.indices), GL.GL_UNSIGNED_INT, 0)
+        GL.glDrawElements(GL.GL_POINTS, 10, GL.GL_UNSIGNED_INT, self.program.indices)
+        self.program.unbind()
+
+        err = GL.glGetError()
+        print("ERROR", err)
+
 
     def mousePressEvent(self, event):
         self.th += 1
@@ -183,7 +141,6 @@ class Scene(GLStandardWindow3D):
     @property
     def camera(self):
         return self._camera
-
 
 def normalsPerVertex(faces = None, numberOfVertices = 0):
     # make sublist of vertices and triangles tahta affect the

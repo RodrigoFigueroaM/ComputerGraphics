@@ -59,6 +59,9 @@ class Camera:
     def rotate(self, mat):
         self.position = mat * self.position
 
+    def translate(self, vec):
+        pass
+
     def mouseRay(self, xin, yin, width, height):
         near = -1.0
         far = 0.0

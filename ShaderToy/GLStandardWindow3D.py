@@ -36,8 +36,10 @@ class GLStandardWindow3D(QOpenGLWidget):
         return QSize(self.width, self.height)
 
     def initializeGL(self):
-        glEnable(GL_LIGHT0)
-        glEnable(GL_LIGHTING)
+        self.printOpenGLSettings()
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LESS)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glFlush()
 
@@ -45,7 +47,7 @@ class GLStandardWindow3D(QOpenGLWidget):
         self.width, self.height = w,h
         glViewport(-w, -h, w, h)
         # glMatrixMode(GL_PROJECTION)
-        self.ratio = w // h
+        self.ratio = w / h
         # glMatrixMode(GL_MODELVIEW)
         # glLoadIdentity()
 

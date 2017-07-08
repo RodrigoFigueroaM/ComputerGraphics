@@ -13,7 +13,7 @@ from Scene import *
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("")
-        MainWindow.resize(600, 400)
+        MainWindow.resize(600, 600)
         self.centralWidget = Scene()
         self.centralWidget.setObjectName("centralWidget")
         self.openGLWidget = Scene()

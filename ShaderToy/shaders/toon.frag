@@ -1,4 +1,4 @@
-#version 120\n
+#version 120
 
 uniform highp mat4 projectionMatrix;
 uniform highp mat4 modelViewMatrix;

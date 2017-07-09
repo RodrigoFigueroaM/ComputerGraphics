@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from mainwindowLayout import Ui_MainWindow
-from Scene import Scene
+from WindowLayouts.SimpleOpenGWindowLayout import Ui_MainWindow
 
 
 class MainWindow(Ui_MainWindow):

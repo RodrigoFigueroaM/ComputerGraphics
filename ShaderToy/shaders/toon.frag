@@ -9,9 +9,9 @@ in vec4 position;
 
 out vec4 FragColor;
 
-const float edge = 0.5;
-const float phong = 0.98;
-const vec3 diffuseColor = vec3(1.0, 0.25, 1.0);
+const float edge = 0.55;
+const float phong = .98;
+const vec3 diffuseColor = vec3(0.4, 0.23, 0.8);
 const vec3 PhongColor = vec3(0.75, 0.75, 1.0);
 const vec3 eyePos = vec3 (0,0,0);
 

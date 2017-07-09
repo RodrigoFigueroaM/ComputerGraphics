@@ -46,14 +46,10 @@ class GLStandardWindow3D(QOpenGLWidget):
     def resizeGL(self, w, h):
         self.width, self.height = w,h
         glViewport(-w, -h, w, h)
-        # glMatrixMode(GL_PROJECTION)
         self.ratio = w / h
-        # glMatrixMode(GL_MODELVIEW)
-        # glLoadIdentity()
 
     @staticmethod
     def printOpenGLSettings():
-        # print("OPENGL EXTENSIONS", glGetString(GL_EXTENSIONS))
         print("OPENGL VERSION", glGetString(GL_VERSION))
         print("OPENGL VENDOR", glGetString(GL_VENDOR))
         print("OPENGL RENDERER", glGetString(GL_RENDERER))

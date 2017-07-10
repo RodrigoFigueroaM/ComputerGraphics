@@ -11,8 +11,7 @@ in vec2 textureCoords;
 out vec4 FragColor;
 void main()
 {
-    vec4 text = texture(textureSampler, textureCoords);
-    float lum = text.r + text.g + text.b /3;
-//    FragColor = vec4(text.r, text.g , text.b/3, 1.0);
-    FragColor = vec4(normal, 1.0);
+    vec4 text = texture(textureSampler, textureCoords.xy);
+    float lum = text.r + text.g + text.b /5;
+    FragColor = vec4(lum,lum,lum, 1.0);
 }

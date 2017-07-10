@@ -37,5 +37,6 @@ void main()
     float NdotH = dot(nrml, halfVector);
     vec3  blinnPhong = lightColor * specularColor * pow( max(NdotH,0.0 ), shininess );
 
-   FragColor = vec4(lambert + blinnPhong + ambientColor + emitColor , 1.0);
+//   FragColor = vec4(lambert + blinnPhong + ambientColor  , 1.0);
+FragColor =     vec4(lambert , 1.0);
 }

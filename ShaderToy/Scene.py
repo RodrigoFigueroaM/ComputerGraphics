@@ -17,7 +17,7 @@ from Widgets.GLStandardWindow3D import GLStandardWindow3D
 # TODO: try to switch models on the go click something snd change model
 
 # TODO: try to switch shaders on the go
-
+#TODO: fix obj loader indices(texture)(normals?)
 # todo :load texture
 # TODO: refractor and make functional model class
 # TODO: load textures to models  make own class derives form model
@@ -25,6 +25,9 @@ from Widgets.GLStandardWindow3D import GLStandardWindow3D
 # TODO: new window system
 # TODO: refactor
 
+VERT_FILE = './shaders/simple.vert'
+FRAG_FILE = './shaders/text.frag'
+MODEL_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/objs/Cerberus.obj'
 
 class Scene(GLStandardWindow3D):
     def __init__(self):
@@ -37,7 +40,7 @@ class Scene(GLStandardWindow3D):
         self.drawingIndices = []
         self.drawingNormals = []
 
-        self._camera = Camera(position=QVector3D(0, 0,3),
+        self._camera = Camera(position=QVector3D(0, 0,2),
                               direction=QVector3D(0, 0, 0),
                               up=QVector3D(0, 1, 0),
                               fov=90)
@@ -53,105 +56,32 @@ class Scene(GLStandardWindow3D):
         self.th = 0
         self.showWireFrame = True
 
-        # objLoader = ObjectLoader("./objs/sphere.obj")
-        # objLoader = ObjectLoader("./objs/Cerberus.obj")
-        # objLoader = ObjectLoader("./objs/untitled.obj")
+        # objLoader = ObjectLoader(MODEL_FILE)
         # vtr = objLoader[0]
-
+        # self.drawingIndices = objLoader[1]
+        # textureCoords = objLoader[2]
         # norms = objLoader[3]
-        vtr = [QVector3D(-0.5, 0.5, -0.5),
-               QVector3D(-0.5, -0.5, -0.5),
-               QVector3D(0.5, -0.5, -0.5),
-               QVector3D(0.5, 0.5, -0.5),
-
-               QVector3D(-0.5, 0.5, 0.5),
-                QVector3D(-0.5, -0.5, 0.5),
-                QVector3D(0.5, -0.5, 0.5),
-                QVector3D(0.5, 0.5, 0.5),
-
-               QVector3D(0.5, 0.5, -0.5),
-                QVector3D(0.5, -0.5, -0.5),
-                QVector3D(0.5, -0.5, 0.5),
-                QVector3D(0.5, 0.5, 0.5),
-
-               QVector3D(-0.5, 0.5, -0.5),
-               QVector3D(-0.5, -0.5, -0.5),
-               QVector3D(-0.5, -0.5, 0.5),
-               QVector3D(-0.5, 0.5, 0.5),
 
 
-                QVector3D(-0.5, 0.5, 0.5),
-                 QVector3D(-0.5, 0.5, -0.5),
-                 QVector3D(0.5, 0.5, -0.5),
-                 QVector3D(0.5, 0.5, 0.5),
 
-
-               QVector3D(-0.5, -0.5, 0.5),
-               QVector3D(-0.5, -0.5, -0.5),
-               QVector3D(0.5, -0.5, -0.5),
-               QVector3D(0.5, -0.5, 0.5),
-               ]
-
-
-        self.drawingIndices = [0,1,3,
-                                3,1,2,
-                                4,5,7,
-                                7,5,6,
-                                8,9,11,
-                                11,9,10,
-                                12,13,15,
-                                15,13,14,
-                                16,17,19,
-                                19,17,18,
-                                20,21,23,
-                                23,21,22]
-
-        textureCoords = [
-            QVector2D(0, 0),
-            QVector2D(0, 1),
-            QVector2D(1, 1),
-            QVector2D(1, 0),
-            QVector2D(0, 0),
-            QVector2D(0, 1),
-            QVector2D(1, 1),
-            QVector2D(1, 0),
-            QVector2D(0, 0),
-            QVector2D(0, 1),
-            QVector2D(1, 1),
-            QVector2D(1, 0),
-            QVector2D(0, 0),
-            QVector2D(0, 1),
-            QVector2D(1, 1),
-            QVector2D(1, 0),
-            QVector2D(0, 0),
-            QVector2D(0, 1),
-            QVector2D(1, 1),
-            QVector2D(1, 0),
-            QVector2D(0, 0),
-            QVector2D(0, 1),
-            QVector2D(1, 1),
-            QVector2D(1, 0)
-
-        ]
-
+        #TODO: delete test
+        # vtr, self.drawingIndices, textureCoords = testCube()
+        vtr, self.drawingIndices, textureCoords = testRec()
         normalsList = normalsPerTriangle(vtr, self.drawingIndices)
         norms = normalsPerVertex(normalsList, len(vtr))
+
 
         verticesAndNormals = [(a,b,c) for (a,b,c) in zip(vtr, textureCoords, norms)]
         # print(verticesAndNormals)
         # print(norms[23], norms[24], norms[25])
         for row in verticesAndNormals:
             for vector in row:
+                # print(vector)
                 self.drawingVertices.append(float(vector.x()))
                 self.drawingVertices.append(float(vector.y()))
                 if hasattr(vector, 'z'):
                     self.drawingVertices.append(float(vector.z()))
-                else:
-                    pass
 
-        print(self.drawingVertices)
-
-        # self.drawingIndices = objLoader[1]
         self.drawingVertices = Model.ListToArray(list=self.drawingVertices, type=np.float32)
         self.drawingIndices = Model.ListToArray(list=self.drawingIndices, type=np.int32)
         self.program = GLProgram(self, numAttibutesInvbo=3)
@@ -160,7 +90,7 @@ class Scene(GLStandardWindow3D):
         super(Scene, self).initializeGL()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glClearColor(0.2, 0.2, 0.2, 1.0)
-        self.program.initProgram('./shaders/simple.vert', './shaders/simple.frag',
+        self.program.initProgram(VERT_FILE, FRAG_FILE,
                                  self.drawingVertices, self.drawingIndices, attribs=[0,1,2])
 
     def paintGL(self):
@@ -178,15 +108,16 @@ class Scene(GLStandardWindow3D):
         else:
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
 
-        self.drawProgramSubrutine(self.program,GL.GL_TRIANGLES)
+        self.drawProgramSubrutine(self.program, GL.GL_TRIANGLES)
 
     def drawProgramSubrutine(self, program, mode=GL.GL_TRIANGLE_STRIP):
-        Nullptr = ctypes.c_void_p(0)
+        nullptr = ctypes.c_void_p(0)
         program.bind()
         program.setUniformValue('modelViewMatrix', self.camera.modelViewMatrix)
         self.program.setUniformValue('normalMatrix', self.camera.normalMatrix)
         program.setUniformValue('projectionMatrix', self.camera.projectionMatrix)
-        GL.glDrawElements(mode, len(program.indices), GL.GL_UNSIGNED_INT, Nullptr)
+        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, (len(program.vertices)//8))
+        GL.glDrawElements(mode, len(program.indices), GL.GL_UNSIGNED_INT, nullptr)
         program.unbind()
 
     def mousePressEvent(self, event):
@@ -218,6 +149,94 @@ class Scene(GLStandardWindow3D):
     def camera(self):
         return self._camera
 
+'''TODO: delete'''
+def testCube():
+    vtr = [QVector3D(-0.5, 0.5, -0.5),
+           QVector3D(-0.5, -0.5, -0.5),
+           QVector3D(0.5, -0.5, -0.5),
+           QVector3D(0.5, 0.5, -0.5),
+
+           QVector3D(-0.5, 0.5, 0.5),
+           QVector3D(-0.5, -0.5, 0.5),
+           QVector3D(0.5, -0.5, 0.5),
+           QVector3D(0.5, 0.5, 0.5),
+
+           QVector3D(0.5, 0.5, -0.5),
+           QVector3D(0.5, -0.5, -0.5),
+           QVector3D(0.5, -0.5, 0.5),
+           QVector3D(0.5, 0.5, 0.5),
+
+           QVector3D(-0.5, 0.5, -0.5),
+           QVector3D(-0.5, -0.5, -0.5),
+           QVector3D(-0.5, -0.5, 0.5),
+           QVector3D(-0.5, 0.5, 0.5),
+
+           QVector3D(-0.5, 0.5, 0.5),
+           QVector3D(-0.5, 0.5, -0.5),
+           QVector3D(0.5, 0.5, -0.5),
+           QVector3D(0.5, 0.5, 0.5),
+
+           QVector3D(-0.5, -0.5, 0.5),
+           QVector3D(-0.5, -0.5, -0.5),
+           QVector3D(0.5, -0.5, -0.5),
+           QVector3D(0.5, -0.5, 0.5),
+           ]
+
+    drawingIndices = [0, 1, 3,
+                           3, 1, 2,
+                           4, 5, 7,
+                           7, 5, 6,
+                           8, 9, 11,
+                           11, 9, 10,
+                           12, 13, 15,
+                           15, 13, 14,
+                           16, 17, 19,
+                           19, 17, 18,
+                           20, 21, 23,
+                           23, 21, 22]
+
+    textureCoords = [
+        QVector2D(0, 0),
+        QVector2D(0, 1),
+        QVector2D(1, 1),
+        QVector2D(1, 0),
+        QVector2D(0, 0),
+        QVector2D(0, 1),
+        QVector2D(1, 1),
+        QVector2D(1, 0),
+        QVector2D(0, 0),
+        QVector2D(0, 1),
+        QVector2D(1, 1),
+        QVector2D(1, 0),
+        QVector2D(0, 0),
+        QVector2D(0, 1),
+        QVector2D(1, 1),
+        QVector2D(1, 0),
+        QVector2D(0, 0),
+        QVector2D(0, 1),
+        QVector2D(1, 1),
+        QVector2D(1, 0),
+        QVector2D(0, 0),
+        QVector2D(0, 1),
+        QVector2D(1, 1),
+        QVector2D(1, 0)
+    ]
+    return vtr, drawingIndices, textureCoords
+def testRec():
+    vtr = [QVector3D(-1.0, 1.0, 0.0),
+           QVector3D(-1.0, -1.0, 0.0),
+           QVector3D(1.0, -1.0, 0.0),
+           QVector3D(1.0, 1.0, 0.0)]
+
+    drawingIndices=[0,1,3, 3, 1, 2]
+
+    textureCoords = [ QVector2D(0, 0),
+                    QVector2D(1, 0),
+                    QVector2D(1, 1),
+                    QVector2D(1, 0) ]
+
+    return vtr, drawingIndices, textureCoords
+
 def normalsPerVertex(faces = None, numberOfVertices = 0):
     # make sublist of vertices and triangles tahta affect the
     li =[]
@@ -239,7 +258,7 @@ def normalsPerVertex(faces = None, numberOfVertices = 0):
             normalsAvg += faces[index][2]
         normalsAvg = normalsAvg / len(row[1])
         normalsAvg = normalsAvg.normalized()
-        verticesNormals.append( normalsAvg )
+        verticesNormals.append(normalsAvg)
     return verticesNormals
 
 
@@ -254,7 +273,7 @@ def normalsPerTriangle(vertices=None, indices=None):
             # if index % 2 == 0:
             normal = QVector3D.crossProduct(b, a)
             # else:
-            #     normal = QVector3D.crossProduct(b, a)
+            #     normal = QVector3D.crossProduct(a, b)
             triangleNormals.append([i, (indices[index], indices[index - 1], indices[index + 2]), normal])
             i += 1
     return triangleNormals

@@ -20,7 +20,7 @@ def ObjectLoader(fileName = None):
                 normal = QVector3D(float(values[1]), float(values[2]), float(values[3]))
                 normals.append(normal)
             elif values[0] == 'vt':
-                texture = QVector2D(float(values[1]),float(values[2]))
+                texture = QVector2D(float(values[1]), float(values[2]))
                 uvs.append(texture)
             elif values[0] == 'f':
                 faces.append(values[1])
@@ -30,21 +30,29 @@ def ObjectLoader(fileName = None):
                 pass
     # print(faces[9*3])
     triangleVerticesIndex, trianglesTextureIndex, trianglesNormalIndex = parseFaces(faces)
+
+    print('triangleVerticesIndex', triangleVerticesIndex)
+
+    print('trianglesNormalIndex',trianglesTextureIndex)
+
+    textureCoords = [0 for i in range(0,len(trianglesTextureIndex))]
+    for coord in trianglesTextureIndex:
+        textureCoords[coord] = uvs[coord]
     # triangles = []
     # for i in range(0,len(triangleVerticesIndex) //3):
     #     triangles.append(vertices[triangleVerticesIndex[i*3]])
     #     triangles.append(vertices[triangleVerticesIndex[i * 3 + 1]])
     #     triangles.append(vertices[triangleVerticesIndex[i * 3 + 2]])
-    #
+
     # vertexNormals = []
     # for index in trianglesNormalIndex:
-    #     vertexNormals.append(normals[index])
+        # vertexNormals.append(normals[index])
     # print(correctedDrawingIndices)
     # print(triangleVertices[9*3], triangleVertices[9*3 + 1], triangleVertices[9*3 + 2])
     # print(vertices[triangleVertices[9*3] - 1 ], vertices[triangleVertices[9*3 + 1] - 1 ], vertices[triangleVertices[9*3 + 2] - 1])
     # print(triangles[27], triangles[28], triangles[29])
 
-    return vertices, triangleVerticesIndex, trianglesTextureIndex, normals
+    return vertices, triangleVerticesIndex, textureCoords, normals
 
 def parseFaces(facesList):
     trianglesIndex = []
@@ -54,7 +62,7 @@ def parseFaces(facesList):
         values = face.split('/')
         trianglesIndex.append(int(values[0]) - 1)
         trianglesTextureIndex.append(int(values[1]) - 1)
-        trianglesNormalIndex.append(int(values[1]) - 1)
+        trianglesNormalIndex.append(int(values[2]) - 1)
     return trianglesIndex, trianglesTextureIndex, trianglesNormalIndex
 
 

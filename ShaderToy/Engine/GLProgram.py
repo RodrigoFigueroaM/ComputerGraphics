@@ -8,7 +8,7 @@ class GLProgram:
         self.num_of_elements_in_vbo = numAttibutesInvbo
         self.vertex_elements = 3
         self._program = QOpenGLShaderProgram(context)
-        self.image = QImage('/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/Engine/cube.png').mirrored()
+        self.image = QImage('/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/cubex.png').mirrored()
         self._texture = QOpenGLTexture(QOpenGLTexture.Target2D)
         self._vertexBufferObject = QOpenGLBuffer(QOpenGLBuffer.VertexBuffer)
         self._indexesBufferObject = QOpenGLBuffer(QOpenGLBuffer.IndexBuffer)
@@ -18,13 +18,7 @@ class GLProgram:
         self.attributes = []
 
     def initProgram(self, vertFile, fragFile, vertices, indices, attribs):
-        self._texture.setSize(256,256)
-        self._texture.setMinificationFilter(QOpenGLTexture.Nearest)
-        self._texture.setMagnificationFilter(QOpenGLTexture.Linear)
-        self._texture.setWrapMode(QOpenGLTexture.Repeat)
-        self._texture.setData(self.image)
-        # self._texture.allocateStorage(QOpenGLTexture.RGBA, QOpenGLTexture.UInt32)
-        # self._texture.setData(QOpenGLTexture.RGB, QOpenGLTexture.Float32, self.image.bits())
+        self.initTexture()
         self.num_of_elements_in_vbo = len(attribs)
         self.vertices = vertices
         self.indices = indices
@@ -38,15 +32,24 @@ class GLProgram:
         self.indexBufferObject.bind()
         self.releaseBuffersAndProgram()
 
+    def initTexture(self):
+        self._texture.create()
+        self._texture.setFormat(QOpenGLTexture.RGBA8_UNorm)
+        self._texture.setSize(256, 256)
+        self._texture.setMinificationFilter(QOpenGLTexture.Linear)
+        self._texture.setMagnificationFilter(QOpenGLTexture.Linear)
+        # self._texture.setWrapMode(QOpenGLTexture.Repeat)
+        self._texture.setData(self.image, QOpenGLTexture.DontGenerateMipMaps)
+        self._texture.allocateStorage()
+        self._texture.bind()
+        print('width', self._texture.width())
+
     def releaseBuffersAndProgram(self):
         self.VAO.release()
         self.vertexBufferObject.release()
         self.indexBufferObject.release()
         self.program.release()
 
-    def unbind(self):
-        self.VAO.release()
-        self.program.release()
 
     def initShaderProgram(self, *arg):
         """ :arg
@@ -86,28 +89,25 @@ class GLProgram:
         self.program.enableAttributeArray(location)
 
     def bindAttributes(self):
-        offset = self.vertices[0].nbytes * self.vertex_elements
-        tex_offset = self.vertices[0].nbytes * 2
+        normal_offset = self.vertices[0].nbytes * 5
+        tex_offset = self.vertices[0].nbytes * 3
         stride = self.vertices[0].nbytes * 8
-        if self.num_of_elements_in_vbo == 1:
-            self._program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, 0)
-        else:
-            for i in self.attributes:
-                if i == 0:
-                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, 0, 3, stride)
-                elif i == 1:
-                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, tex_offset, 2, stride)
-                else:
-                    self._program.setAttributeBuffer(i, GL.GL_FLOAT, offset, 3, stride)
+        print('len', len(self.vertices))
+        print('sas', self.vertices)
+        print('tex_offset',tex_offset)
+        print('normal_offset', normal_offset)
+        self._program.setAttributeBuffer(0, GL.GL_FLOAT, 0, 3, stride)
+        self._program.setAttributeBuffer(1, GL.GL_FLOAT, tex_offset, 2, stride)
+        self._program.setAttributeBuffer(2, GL.GL_FLOAT, normal_offset, 3, stride)
 
     def bind(self):
         self.program.bind()
         self._texture.bind()
         self.VAO.bind()
 
-
     def unbind(self):
         self.VAO.release()
+        self._texture.release()
         self.program.release()
 
     def setUniformValue(self, uniform, value):

@@ -4,8 +4,16 @@ uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 normalMatrix;
 
+
+uniform sampler2D textureSampler;
+
+
 in vec4 position;
 in vec3 normal;
+
+
+in vec2 textureCoords;
+
 
 out vec4 FragColor;
 
@@ -19,6 +27,8 @@ const vec3 specularColor = vec3(1.0, 1.0, 1.0);
 const vec3 emitColor = vec3(0.0, 0.0, 1.0);
 const float shininess = 160.0;
 const vec3 eyePos = vec3 (0,0,0);
+
+const vec4 color = vec4(0.443, 0.0, 0.323, 1.0);
 
 
 void main()
@@ -38,5 +48,8 @@ void main()
     vec3  blinnPhong = lightColor * specularColor * pow( max(NdotH,0.0 ), shininess );
 
 //   FragColor = vec4(lambert + blinnPhong + ambientColor  , 1.0);
-FragColor =     vec4(lambert , 1.0);
+//FragColor =     vec4(lambert , 1.0);
+vec4 text = texture(textureSampler, textureCoords.xy);
+//    alpha blending
+    FragColor = text * text.a + vec4(0.0, 0.0, 0.0, 1.0) * (1 - text.a) + vec4(lambert + blinnPhong + ambientColor, 1.0);
 }

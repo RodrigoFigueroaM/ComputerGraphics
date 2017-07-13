@@ -6,31 +6,21 @@ import numpy as np
 from PyQt5.Qt import Qt
 from PyQt5.QtGui import QMatrix4x4, QVector3D, QVector2D
 from PyQt5.QtCore import QElapsedTimer
-from Engine.Camera import Camera
-from Engine.Model import Model
-from Engine.ObjLoader import ObjectLoader
-from Engine.GLProgram import GLProgram
-from Engine.TrackBall import TrackBall
+from pyEngine.Camera import Camera
+from pyEngine.Model import Model
+from pyEngine.GLProgram import GLProgram
 from Widgets.GLStandardWindow3D import GLStandardWindow3D
 
-
-#T ODO: add more textures to glpogram
-# TODO: try to switch models on the go click something snd change model
-
-# TODO: try to switch shaders on the go
-# TODO: fix obj loader indices(texture)(normals?)
-# todo :load texture
-# TODO: refractor and make functional model class
-# TODO: load textures to models  make own class derives form model
+# todo: pan camera
+# TODO: render texture infront of other texture aka heat efect
 # TODO: add timer variable to shader
 # TODO: new window system
 # TODO: refactor
 
+IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/2DshaderToy/textures/strawberries.jpg'
+VERT_FILE = './shaders/texture.vert'
+FRAG_FILE = './shaders/strawberry.frag'
 
-IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/86.png'
-VERT_FILE = './shaders/blackLight.vert'
-FRAG_FILE = './shaders/blackLight.frag'
-MODEL_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/objs/Cerberus.obj'
 
 class Scene(GLStandardWindow3D):
     def __init__(self):
@@ -43,52 +33,16 @@ class Scene(GLStandardWindow3D):
         self.drawingIndices = []
         self.drawingNormals = []
 
-        self._camera = Camera(position=QVector3D(0, 0, 2),
+        self._camera = Camera(position=QVector3D(0, 0, 1.1),
                               direction=QVector3D(0, 0, 0),
                               up=QVector3D(0, 1, 0),
                               fov=90)
-
-        self.trackBall = TrackBall()
         self.pressClick = QVector3D()
         self.releaseClick = QVector3D()
-        self.rotation = QMatrix4x4()
         self.normalMatrix = QMatrix4x4()
 
-        # interaction
-        self.key = None
-        self.th = 0
-        self.showWireFrame = True
-
-        # objLoader = ObjectLoader(MODEL_FILE)
-        # vtr = objLoader[0]
-        # self.drawingIndices = objLoader[1]
-        # textureCoords = objLoader[2]
-        # norms = objLoader[3]
-
-
-
-        #TODO: delete test
-        # vtr, self.drawingIndices, textureCoords = testCube()
-        vtr, self.drawingIndices, textureCoords = testRec()
-        normalsList = normalsPerTriangle(vtr, self.drawingIndices)
-        norms = normalsPerVertex(normalsList, len(vtr))
-
-
-        verticesAndNormals = [(a,b,c) for (a,b,c) in zip(vtr, textureCoords, norms)]
-        # print(verticesAndNormals)
-        # print(norms[23], norms[24], norms[25])
-        for row in verticesAndNormals:
-            for vector in row:
-                # print(vector)
-                self.drawingVertices.append(float(vector.x()))
-                self.drawingVertices.append(float(vector.y()))
-                if hasattr(vector, 'z'):
-                    self.drawingVertices.append(float(vector.z()))
-
-        self.drawingVertices = Model.ListToArray(list=self.drawingVertices, type=np.float32)
-        self.drawingIndices = Model.ListToArray(list=self.drawingIndices, type=np.int32)
+        self.initRect()
         self.program = GLProgram(self, numAttibutesInvbo=3)
-
 
     def initializeGL(self):
         super(Scene, self).initializeGL()
@@ -109,13 +63,6 @@ class Scene(GLStandardWindow3D):
         self.camera.setPerspective(self.camera.fov, self.ratio, 0.1, 100.0)
 
         self.camera.lookAtCenter()
-        self.camera.position = self.rotation * self.camera.position
-
-        if self.showWireFrame:
-            GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL)
-        else:
-            GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
-
         self.drawProgramSubroutine(self.program, GL.GL_TRIANGLES)
         self.update()
 
@@ -130,16 +77,28 @@ class Scene(GLStandardWindow3D):
         GL.glDrawElements(mode, len(program.indices), GL.GL_UNSIGNED_INT, nullptr)
         program.unbind()
 
+    def initRect(self):
+        vtr, self.drawingIndices, textureCoords = Model.testRec()
+        normalsList = normalsPerTriangle(vtr, self.drawingIndices)
+        norms = normalsPerVertex(normalsList, len(vtr))
+        verticesAndNormals = [(a,b,c) for (a,b,c) in zip(vtr, textureCoords, norms)]
+        for row in verticesAndNormals:
+            for vector in row:
+                # print(vector)
+                self.drawingVertices.append(float(vector.x()))
+                self.drawingVertices.append(float(vector.y()))
+                if hasattr(vector, 'z'):
+                    self.drawingVertices.append(float(vector.z()))
+        self.drawingVertices = Model.listToArray(list=self.drawingVertices, type=np.float32)
+        self.drawingIndices = Model.listToArray(list=self.drawingIndices, type=np.int32)
+
     def mousePressEvent(self, event):
-        self.th += 1
         self.pressClick = QVector3D(event.x(), self.height - event.y(), 0)
-        self.trackBall.clicked(event.x(), event.y(), self.width, self.height)
         self.update()
 
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton:
             self.releaseClick = QVector3D(event.x(), self.height - event.y(), 0)
-            self.rotation = self.trackBall.move(event.x(), event.y(), self.width, self.height)
             self.update()
 
     def mouseReleaseEvent(self, event):
@@ -151,8 +110,6 @@ class Scene(GLStandardWindow3D):
 
     def keyPressEvent(self, QKeyEvent):
         self.key = QKeyEvent.key()
-        if QKeyEvent.key() == Qt.Key_W:
-            self.showWireFrame = not self.showWireFrame
         self.update()
 
     @property

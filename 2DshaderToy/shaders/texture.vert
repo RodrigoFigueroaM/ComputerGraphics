@@ -15,7 +15,7 @@ out vec2 textureCoords;
 void main()
 {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(pos,1.0);
-    textureCoords = pos.xy*0.5f + 0.5;
+    textureCoords = pos.xy / 2 + 0.5;
     position = vec4(pos, 1.0);
     
     vec4 tempNormal = normalMatrix * vec4(norm, 1.0);

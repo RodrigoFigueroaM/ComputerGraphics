@@ -16,6 +16,13 @@ vec4 backgroundColor = vec4(0.2, 0.2, 0.2, 1.0);
 void main()
 {
     vec4 text = texture(textureSampler, textureCoords);
+    float red = text.r;
+    float green = text.g ;
+    float blue = text.b;
+    float alpha = text.a;
+    float res = red * 0.3f + green * 1 + blue * 0.3;
+    vec4 color = vec4(res,res + green,res, alpha );
+//    text.rbga;
 //  alpha blending
-    FragColor = text * text.a + backgroundColor * (1 - text.a);
+    FragColor = color * color.a + backgroundColor * (1 - color.a);
 }

@@ -64,7 +64,7 @@ class Scene(GLStandardWindow3D):
     def initializeGL(self):
         super(Scene, self).initializeGL()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
-        GL.glClearColor(0.36, 0.36, 0.36, 1.0)
+        GL.glClearColor(0.3, 0.3, 0.3, 1.0)
         # self.program.addTexture(IMG_FILE)
 
         self.program.initProgram(VERT_FILE,
@@ -93,12 +93,12 @@ class Scene(GLStandardWindow3D):
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
 
         self.drawProgramSubroutine(self.program, GL.GL_TRIANGLES)
-        self.drawProgramSubroutine(self.gridProgram, GL.GL_LINES)
+        # self.drawProgramSubroutine(self.gridProgram, GL.GL_LINES)
         self.update()
 
     def initCamera(self):
         self._camera = Camera(position=QVector3D(1.5, 1, 1.5),
-                              direction=QVector3D(0.5, 0, 0.5),
+                              direction=QVector3D(0.0, 0, 0.0),
                               up=QVector3D(0, 1, 0),
                               fov=90)
 

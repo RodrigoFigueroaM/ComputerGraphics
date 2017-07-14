@@ -10,7 +10,7 @@ from Widgets.GLStandardWindow3D import GLStandardWindow3D
 from pyEngine.Camera import Camera
 from pyEngine.GLProgram import GLProgram
 from pyEngine.Geometry.Grid import Grid
-from pyEngine.ObjLoader import loadObj
+from pyEngine.Model import Model
 from pyEngine.TrackBall import TrackBall
 
 # TODO: fix obj loader indices(texture)(normals?)
@@ -19,10 +19,8 @@ from pyEngine.TrackBall import TrackBall
 # TODO: refactor
 
 
-IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/zen.jpg'
+# IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/zen.jpg'
 
-VERT_FILE3 = './shaders/blinPhong.vert'
-FRAG_FILE3 = './shaders/toon.frag'
 
 VERT_FILE2 = './shaders/shafae_blinn_phong.vert'
 FRAG_FILE2 = './shaders/shafae_blinn_phong.frag'
@@ -52,21 +50,12 @@ class Scene(GLStandardWindow3D):
         self.key = None
         self.showWireFrame = True
 
-        #obj lists
-        self.drawingVertices = []
-        self.drawingIndices = []
-        self.drawingNormals = []
-
         # methods
         self.initCamera()
-        self.loadObj(MODEL_FILE)
+        self.model = Model(MODEL_FILE)
 
         #grid lists
         self.grid = Grid()
-        print(self.grid)
-        print(self.grid.verticesIndices)
-        self.gridVertices = self.grid.drawingVertices
-        self.gridIndices = self.grid.verticesIndices
 
         # GLPROGRAMS
         self.program = GLProgram(self, numAttibutesInvbo=3)
@@ -76,17 +65,18 @@ class Scene(GLStandardWindow3D):
         super(Scene, self).initializeGL()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glClearColor(0.36, 0.36, 0.36, 1.0)
-        self.program.addTexture(IMG_FILE)
+        # self.program.addTexture(IMG_FILE)
 
         self.program.initProgram(VERT_FILE,
                                  FRAG_FILE,
-                                 self.drawingVertices,
-                                 self.drawingIndices,
+                                 self.model.drawingVertices,
+                                 self.model.verticesIndices,
                                  attribs=[0, 1, 2])
+
         self.gridProgram.initProgram(GRID_VERT,
                                      GRID_FRAG,
-                                     self.gridVertices,
-                                     self.gridIndices,
+                                     self.grid.drawingVertices,
+                                     self.grid.verticesIndices,
                                      attribs=[0, 1, 2])
 
     def paintGL(self):
@@ -95,9 +85,7 @@ class Scene(GLStandardWindow3D):
 
         self.ratio = self.width / self.height
         self.camera.setPerspective(self.camera.fov, self.ratio, 0.1, 100.0)
-
         self.camera.lookAtCenter()
-        self.camera.position = self.rotation * self.camera.position
 
         if self.showWireFrame:
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_FILL)
@@ -106,10 +94,7 @@ class Scene(GLStandardWindow3D):
 
         self.drawProgramSubroutine(self.program, GL.GL_TRIANGLES)
         self.drawProgramSubroutine(self.gridProgram, GL.GL_LINES)
-        # self.update()
-
-    def loadObj(self, objFile):
-        self.drawingVertices, self.drawingIndices = loadObj(objFile)[0:2]
+        self.update()
 
     def initCamera(self):
         self._camera = Camera(position=QVector3D(1.5, 1, 1.5),
@@ -137,6 +122,7 @@ class Scene(GLStandardWindow3D):
         if event.buttons() == Qt.LeftButton:
             self.releaseClick = QVector3D(event.x(), self.height - event.y(), 0)
             self.rotation = self.trackBall.move(event.x(), event.y(), self.width, self.height)
+            self.camera.position = self.rotation * self.camera.position
             self.update()
 
     def mouseReleaseEvent(self, event):
@@ -150,7 +136,7 @@ class Scene(GLStandardWindow3D):
         self.key = QKeyEvent.key()
         if QKeyEvent.key() == Qt.Key_R:
             self.showWireFrame = not self.showWireFrame
-            self.update()
+            # self.update()
 
     @property
     def camera(self):

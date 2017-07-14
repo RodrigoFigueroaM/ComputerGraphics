@@ -3,7 +3,7 @@
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 normalMatrix;
-
+uniform float time;
 
 uniform sampler2D textureSampler;
 
@@ -17,7 +17,7 @@ in vec2 textureCoords;
 
 out vec4 FragColor;
 
-const vec3 lightPos = vec3(0.0, 0.0, 10.0);
+vec3 lightPos = vec3(0.0, 0.0, 10.0);
 const vec3 lightColor = vec3(1.0, 1.0, 1.0);
 
 const vec3 ambientColor = vec3(0.2, 0.2, 0.2);
@@ -30,9 +30,16 @@ const vec3 eyePos = vec3 (0,0,0);
 
 const vec4 color = vec4(0.443, 0.0, 0.323, 1.0);
 
+mat4 rotate(float _angle){
+    return mat4(cos(_angle),0, -sin(_angle),0,
+                0,1,0,0,
+                sin(_angle),0,cos(_angle),0,
+                0,0,0,1);
+}
 
 void main()
 {
+    lightPos = (rotate(time * 10) * vec4(lightPos, 1.0)).xyz;
     vec4 tempVertex = modelViewMatrix * position;
     vec3 vrtx = tempVertex.xyz / tempVertex.w;
     vec4 tempNormal = normalMatrix * vec4(normal,0.0);

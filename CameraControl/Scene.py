@@ -150,7 +150,7 @@ class Scene(GLStandardWindow3D):
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.StrongFocus)
         self._camera = Camera(position = QVector3D(2, 2, 5),
-                              direction = QVector3D(0, 0, 0),
+                              direction = QVector3D(0, 0, -1),
                               up = QVector3D(0, 1, 0),
                               fov = 90)
         self.trackBall = TrackBall()
@@ -163,6 +163,8 @@ class Scene(GLStandardWindow3D):
         #interaction
         self.key = None
         self.th = 0
+
+        self.target = QVector3D(0,0,0)
 
 
     def initializeGL(self):
@@ -178,7 +180,10 @@ class Scene(GLStandardWindow3D):
     def paintGL(self):
         self.ratio = self.width / self.height
         self.camera.setPerspective(self.camera.fov, self.ratio, 1.0, 100.0)
-        self.camera.lookAt(QVector3D(0, 0, 0))
+
+        self.camera.lookAtTarget(self.target)
+        print(self.target)
+        # self.camera.lookAt(QVector3D(0, 0, 0))
         if self.key == Qt.Key_Alt: 
             self.camera.rotate(self.rotation)
 
@@ -234,7 +239,17 @@ class Scene(GLStandardWindow3D):
 
     def keyPressEvent(self, QKeyEvent):
         self.key = QKeyEvent.key()
+        if Qt.Key_W == QKeyEvent.key():
+            self.camera.moveUp()
+        elif Qt.Key_S == QKeyEvent.key():
+            self.camera.moveDown()
+        elif Qt.Key_A == QKeyEvent.key():
+            self.camera.moveLeft()
+        elif Qt.Key_D == QKeyEvent.key():
+            self.camera.moveRight()
 
+
+        self.update()
     @property
     def camera(self):
         return self._camera

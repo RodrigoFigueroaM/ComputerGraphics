@@ -19,14 +19,13 @@ from pyEngine.TrackBall import TrackBall
 # TODO: refactor
 
 
-# IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/zen.jpg'
+IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/cc.jpg'
 
+VERT_FILE = './shaders/my_gooch.vert'
+FRAG_FILE = './shaders/my_gooch.frag'
 
-VERT_FILE2 = './shaders/shafae_blinn_phong.vert'
-FRAG_FILE2 = './shaders/shafae_blinn_phong.frag'
-
-VERT_FILE = './shaders/blinPhong.vert'
-FRAG_FILE = './shaders/blinPhong.frag'
+VERT_FILE2 = './shaders/blinPhong.vert'
+FRAG_FILE2 = './shaders/blinPhong.frag'
 MODEL_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/objs/Cerberus.obj'
 
 GRID_VERT = './shaders/grid.vert'
@@ -66,7 +65,6 @@ class Scene(GLStandardWindow3D):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glClearColor(0.3, 0.3, 0.3, 1.0)
         # self.program.addTexture(IMG_FILE)
-
         self.program.initProgram(VERT_FILE,
                                  FRAG_FILE,
                                  self.model.drawingVertices,
@@ -82,7 +80,6 @@ class Scene(GLStandardWindow3D):
     def paintGL(self):
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glViewport(0, 0, self.width, self.height)
-
         self.ratio = self.width / self.height
         self.camera.setPerspective(self.camera.fov, self.ratio, 0.1, 100.0)
         self.camera.lookAtCenter()
@@ -93,11 +90,12 @@ class Scene(GLStandardWindow3D):
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
 
         self.drawProgramSubroutine(self.program, GL.GL_TRIANGLES)
+
         # self.drawProgramSubroutine(self.gridProgram, GL.GL_LINES)
         self.update()
 
     def initCamera(self):
-        self._camera = Camera(position=QVector3D(1.5, 1, 1.5),
+        self._camera = Camera(position=QVector3D(0, 0, 3),
                               direction=QVector3D(0.0, 0, 0.0),
                               up=QVector3D(0, 1, 0),
                               fov=90)
@@ -109,7 +107,7 @@ class Scene(GLStandardWindow3D):
         program.setUniformValue('modelViewMatrix', self.camera.modelViewMatrix)
         program.setUniformValue('normalMatrix', self.camera.normalMatrix)
         program.setUniformValue('projectionMatrix', self.camera.projectionMatrix)
-        # GL.glDrawArrays(GL.GL_TRIANGLES, 0, (len(program.vertices)//8))
+        program.setUniformValue('modelTransformationMatrix', self.model.transformationMatrix)
         GL.glDrawElements(mode, len(program.indices), GL.GL_UNSIGNED_INT, nullptr)
         program.unbind()
 

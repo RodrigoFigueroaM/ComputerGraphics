@@ -33,14 +33,6 @@ const vec4 color = vec4(0.443, 0.0, 0.323, 1.0);
 vec3 redLightPos = vec3(0.0, 0.0, 2.0);
 const vec3 redLightColor = vec3(1.0, 0.0, 0.0);
 
-
-mat4 rotate(float _angle){
-    return mat4(cos(_angle),0, -sin(_angle),0,
-                0,1,0,0,
-                sin(_angle),0,cos(_angle),0,
-                0,0,0,1);
-}
-
 vec3 computeLigth(const in vec3 normal, const in vec3 direction, const in vec3 diffuseColor,
                   const in vec3 lightColor, const in vec3 halfVector, const in vec3 specularColor,
                   const in float shininess)
@@ -56,7 +48,6 @@ vec3 computeLigth(const in vec3 normal, const in vec3 direction, const in vec3 d
 
 void main()
 {
-    lightPos = (rotate(time * 10) * vec4(lightPos, 1.0)).xyz;
     vec4 tempVertex = modelViewMatrix * position;
     vec3 vrtx = tempVertex.xyz / tempVertex.w;
     vec4 tempNormal = normalMatrix * vec4(normal,0.0);
@@ -72,11 +63,14 @@ void main()
 
     vec3 redLightColor = computeLigth(nrml, redLightDir, diffuseColor, redLightColor, halfVector, specularColor, shininess);
 
+    //R
+    vec3 R = normalize(reflect(-lightDir, norml));
+    float RDotV = dot(R,eyeDir);
 
 
 //   FragColor = vec4(lambert + blinnPhong + ambientColor  , 1.0);
 //FragColor =     vec4(lambert , 1.0);
-vec4 text = texture(textureSampler, textureCoords.xy);
+    vec4 text = texture(textureSampler, textureCoords.xy);
 //    alpha blending
     FragColor = text * text.a + vec4(0.0, 0.0, 0.0, 1.0) * (1 - text.a) + vec4(color + redLightColor + ambientColor, 1.0);
 }

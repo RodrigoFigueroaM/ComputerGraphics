@@ -36,8 +36,8 @@ void main()
     vec3 norml = normalize(tempNormal.xyz);
 
     vec3 text = texture(textureSampler, textureCoords.xy).rgb;
-    vec3 coldDiffuse = coolColor + alpha * baseColor;
-    vec3 warmDiffuse = warmColor + beta * baseColor;
+    vec3 coldDiffuse = coolColor + alpha * text;
+    vec3 warmDiffuse = warmColor + beta * text;
 
     vec3 lightDir = normalize(lightPos - vrtx); //L
     float NdotL = dot(lightDir, norml);

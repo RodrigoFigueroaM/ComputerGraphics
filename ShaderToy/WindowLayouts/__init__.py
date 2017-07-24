@@ -1,1 +1,1 @@
-__all__ = ["SimpleOpenGWindowLayout"]
+__all__ = ["SimpleOpenGWindowLayout", "ShaderWindowLayout"]

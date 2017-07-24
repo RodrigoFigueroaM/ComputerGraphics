@@ -4,7 +4,7 @@ import ctypes
 import OpenGL.GL as GL
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import QElapsedTimer
-from PyQt5.QtGui import QMatrix4x4, QVector3D
+from PyQt5.QtGui import QMatrix4x4, QVector3D , QOpenGLFramebufferObject
 
 from Widgets.GLStandardWindow3D import GLStandardWindow3D
 from pyEngine.Camera import Camera
@@ -21,8 +21,8 @@ from pyEngine.TrackBall import TrackBall
 
 IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/cc.jpg'
 
-VERT_FILE = './shaders/my_gooch.vert'
-FRAG_FILE = './shaders/my_gooch.frag'
+VERT_FILE = './shaders/matte.vert'
+FRAG_FILE = './shaders/matte.frag'
 
 VERT_FILE2 = './shaders/blinPhong.vert'
 FRAG_FILE2 = './shaders/blinPhong.frag'
@@ -57,14 +57,24 @@ class Scene(GLStandardWindow3D):
         self.grid = Grid()
 
         # GLPROGRAMS
-        self.program = GLProgram(self, numAttibutesInvbo=3)
+        self._program = GLProgram(self, numAttibutesInvbo=3)
         self.gridProgram = GLProgram(self, numAttibutesInvbo=3)
+
+        # FBO
+        self.fbo = None
 
     def initializeGL(self):
         super(Scene, self).initializeGL()
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glClearColor(0.3, 0.3, 0.3, 1.0)
-        # self.program.addTexture(IMG_FILE)
+
+
+
+        # self.fbo = QOpenGLFramebufferObject(100, 100, QOpenGLFramebufferObject.CombinedDepthStencil, GL.GL_TEXTURE_2D)
+        # self.fbo.bind()
+        # self.fbo.release()
+
+        self.program.addTexture(IMG_FILE)
         self.program.initProgram(VERT_FILE,
                                  FRAG_FILE,
                                  self.model.drawingVertices,
@@ -78,6 +88,9 @@ class Scene(GLStandardWindow3D):
                                      attribs=[0, 1, 2])
 
     def paintGL(self):
+        # self.fbo.bind()
+        # print(self.fbo.toImage())
+
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         GL.glViewport(0, 0, self.width, self.height)
         self.ratio = self.width / self.height
@@ -90,9 +103,10 @@ class Scene(GLStandardWindow3D):
             GL.glPolygonMode(GL.GL_FRONT_AND_BACK, GL.GL_LINE)
 
         self.drawProgramSubroutine(self.program, GL.GL_TRIANGLES)
-
-        # self.drawProgramSubroutine(self.gridProgram, GL.GL_LINES)
         self.update()
+        # self.drawProgramSubroutine(self.gridProgram, GL.GL_LINES)
+        # self.fbo.release()
+
 
     def initCamera(self):
         self._camera = Camera(position=QVector3D(0, 0, 3),
@@ -139,6 +153,10 @@ class Scene(GLStandardWindow3D):
     @property
     def camera(self):
         return self._camera
+
+    @property
+    def program(self):
+        return self._program
 
 
 def initTimer(interval=100):

@@ -21,8 +21,8 @@ from pyEngine.TrackBall import TrackBall
 
 IMG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/textures/cc.jpg'
 
-VERT_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/shaders/blinnPhong.vert'
-FRAG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/shaders/blinn_Phong_two_lights.frag'
+VERT_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/shaders/matte.vert'
+FRAG_FILE = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/shaders/matte.frag'
 
 # VERT_FILE2 = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/shaders/blinPhong.vert'
 # FRAG_FILE2 = '/Users/rui/Desktop/githubStuff/ComputerGraphics/ShaderToy/shaders/blinPhong.frag'

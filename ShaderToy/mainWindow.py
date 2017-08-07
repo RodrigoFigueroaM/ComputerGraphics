@@ -16,3 +16,4 @@ class MainWindow(Ui_MainWindow):
         fragmentCode = self.FragementCode.toPlainText()
         self.logTextBox.clear()
         self.logTextBox.appendPlainText(str(self.openGLWidget.program.changeVertexAndFragmentFromSourceCode(vertexCode, fragmentCode)))
+        self.openGLWidget.update()

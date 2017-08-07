@@ -8,6 +8,7 @@ Application to develop and debug shaders written in GLSL in real time.
 - PyOpenGL
 - PyQt5
 - pyEngine
+- pyAssimp
 
 ### How to execute program:
 ```sh
